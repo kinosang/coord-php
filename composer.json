@@ -1,0 +1,21 @@
+{
+    "name": "leoding86/coord-transform",
+    "description": "A simple coord transformer with BD09, WGS84, GCJ02.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Leo Ding",
+            "email": "leoding86@msn.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.3",
+    },
+    "autoload": {
+        "psr-4": {
+            "leoding86\\CoordTransform\\": "src/"
+        }
+    }
+}

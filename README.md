@@ -1,2 +1,2 @@
 # coord-transform
-A simple coord transformer with BD09, WGS84, GCJ02.
+A simple coord transformer between BD09, WGS84, GCJ02.
