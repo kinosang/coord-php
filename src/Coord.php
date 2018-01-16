@@ -18,7 +18,7 @@ class Coord
     private $latitude;
     private $type;
 
-    public function __construct(float $longitude, float $latitude, int $type = self::WGS84)
+    public function __construct($longitude, $latitude, $type = self::WGS84)
     {
         if (!in_array($type, [1, 2, 3])) {
             throw new UnknownTypeException($this->type);
@@ -100,7 +100,7 @@ class Coord
         return $this->wgs84ToGcj02()->gcj02ToBd09();
     }
 
-    private function transformLatitude(float $longitude, float $latitude)
+    private function transformLatitude($longitude, $latitude)
     {
         $ret = -100.0 + 2.0 * $longitude + 3.0 * $latitude + 0.2 * pow($latitude, 2)
          + 0.1 * $longitude * $latitude + 0.2 * sqrt(abs($longitude));
@@ -110,7 +110,7 @@ class Coord
         return $ret;
     }
 
-    private function transformLongitude(float $longitude, float $latitude)
+    private function transformLongitude($longitude, $latitude)
     {
         $ret = 300.0 + $longitude + 2.0 * $latitude + 0.1 * pow($longitude, 2)
          + 0.1 * $longitude * $latitude + 0.1 * sqrt(abs($longitude));
@@ -177,7 +177,7 @@ class Coord
         }
     }
 
-    public function to(int $type)
+    public function to($type)
     {
         switch ($type) {
             case self::WGS84:
