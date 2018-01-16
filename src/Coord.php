@@ -81,7 +81,8 @@ class Coord
 
     private function gcj02ToBd09()
     {
-        $z = sqrt($this->longitude * $this->longitude + $this->latitude * $this->latitude) + 0.00002 * sin($this->latitude * self::X_PI);
+        $z = sqrt($this->longitude * $this->longitude + $this->latitude * $this->latitude)
+         + 0.00002 * sin($this->latitude * self::X_PI);
         $theta = atan2($this->latitude, $this->longitude) + 0.000003 * cos($this->longitude * self::X_PI);
         $bd_longitude = $z * cos($theta) + 0.0065;
         $bd_latitude = $z * sin($theta) + 0.006;
@@ -101,7 +102,8 @@ class Coord
 
     private function transformLatitude(float $longitude, float $latitude)
     {
-        $ret = -100.0 + 2.0 * $longitude + 3.0 * $latitude + 0.2 * $latitude * $latitude + 0.1 * $longitude * $latitude + 0.2 * sqrt(abs($longitude));
+        $ret = -100.0 + 2.0 * $longitude + 3.0 * $latitude + 0.2 * pow($latitude, 2)
+         + 0.1 * $longitude * $latitude + 0.2 * sqrt(abs($longitude));
         $ret += (20.0 * sin(6.0 * $longitude * self::PI) + 20.0 * sin(2.0 * $longitude * self::PI)) * 2.0 / 3.0;
         $ret += (20.0 * sin($latitude * self::PI) + 40.0 * sin($latitude / 3.0 * self::PI)) * 2.0 / 3.0;
         $ret += (160.0 * sin($latitude / 12.0 * self::PI) + 320 * sin($latitude * self::PI / 30.0)) * 2.0 / 3.0;
@@ -110,7 +112,8 @@ class Coord
 
     private function transformLongitude(float $longitude, float $latitude)
     {
-        $ret = 300.0 + $longitude + 2.0 * $latitude + 0.1 * $longitude * $longitude + 0.1 * $longitude * $latitude + 0.1 * sqrt(abs($longitude));
+        $ret = 300.0 + $longitude + 2.0 * $latitude + 0.1 * pow($longitude, 2)
+         + 0.1 * $longitude * $latitude + 0.1 * sqrt(abs($longitude));
         $ret += (20.0 * sin(6.0 * $longitude * self::PI) + 20.0 * sin(2.0 * $longitude * self::PI)) * 2.0 / 3.0;
         $ret += (20.0 * sin($longitude * self::PI) + 40.0 * sin($longitude / 3.0 * self::PI)) * 2.0 / 3.0;
         $ret += (150.0 * sin($longitude / 12.0 * self::PI) + 300.0 * sin($longitude / 30.0 * self::PI)) * 2.0 / 3.0;
