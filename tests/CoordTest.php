@@ -5,7 +5,7 @@ namespace labs7in0\coord\Tests;
 use labs7in0\coord\Coord;
 use PHPUnit\Framework\TestCase;
 
-class StackTest extends TestCase
+class CoordTest extends TestCase
 {
     public function testToString()
     {
