@@ -1,21 +1,23 @@
 {
-    "name": "leoding86/coord-transform",
-    "description": "A simple coord transformer with BD09, WGS84, GCJ02.",
+    "name": "labs7in0/coord",
+    "description": "A simple coord library with distance calculating and BD09-WGS84-GCJ02 transforming.",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Leo Ding",
-            "email": "leoding86@msn.com"
+            "name": "Chino Chang",
+            "email": "me@7in0.me"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-        "php": ">=5.3"
+        "php": ">=5.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8"
     },
     "autoload": {
         "psr-4": {
-            "leoding86\\CoordTransform\\": "src/"
+            "labs7in0\\coord\\": "src/"
         }
     }
 }
