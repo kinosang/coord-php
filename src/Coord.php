@@ -45,7 +45,11 @@ class Coord
             $mglatitude = $this->latitude + $dlatitude;
             $mglongitude = $this->longitude + $dlongitude;
 
-            return new self($this->longitude * 2 - $mglongitude, $this->latitude * 2 - $mglatitude, self::WGS84);
+            $this->longitude = $this->longitude * 2 - $mglongitude;
+            $this->latitude = $this->latitude * 2 - $mglatitude;
+            $this->type = self::WGS84;
+
+            return $this;
         }
     }
 
@@ -65,7 +69,11 @@ class Coord
             $mglatitude = $this->latitude + $dlatitude;
             $mglongitude = $this->longitude + $dlongitude;
 
-            return new self($mglongitude, $mglatitude, self::GCJ02);
+            $this->longitude = $mglongitude;
+            $this->latitude = $mglatitude;
+            $this->type = self::GCJ02;
+
+            return $this;
         }
     }
 
@@ -76,7 +84,11 @@ class Coord
         $z = sqrt($x * $x + $y * $y) - 0.00002 * sin($y * self::X_PI);
         $theta = atan2($y, $x) - 0.000003 * cos($x * self::X_PI);
 
-        return new self($z * cos($theta), $z * sin($theta), self::GCJ02);
+        $this->longitude = $z * cos($theta);
+        $this->latitude = $z * sin($theta);
+        $this->type = self::GCJ02;
+
+        return $this;
     }
 
     private function gcj02ToBd09()
@@ -87,7 +99,11 @@ class Coord
         $bd_longitude = $z * cos($theta) + 0.0065;
         $bd_latitude = $z * sin($theta) + 0.006;
 
-        return new self($bd_longitude, $bd_latitude, self::BD09);
+        $this->longitude = $bd_longitude;
+        $this->latitude = $bd_latitude;
+        $this->type = self::BD09;
+
+        return $this;
     }
 
     private function bd09ToWgs84()
@@ -118,6 +134,11 @@ class Coord
         $ret += (20.0 * sin($longitude * self::PI) + 40.0 * sin($longitude / 3.0 * self::PI)) * 2.0 / 3.0;
         $ret += (150.0 * sin($longitude / 12.0 * self::PI) + 300.0 * sin($longitude / 30.0 * self::PI)) * 2.0 / 3.0;
         return $ret;
+    }
+
+    public function clone()
+    {
+        return clone $this;
     }
 
     public function isOutOfChina()
@@ -196,7 +217,7 @@ class Coord
 
     public function distanceTo(Coord $destination)
     {
-        $destination = $destination->to($this->type);
+        $destination->to($this->type);
 
         $latitudeRadA = deg2rad($this->latitude);
         $longitudeRadA = deg2rad($this->longitude);
