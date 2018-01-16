@@ -14,9 +14,9 @@ class Coord
     const A = 6378245.0;
     const EE = 0.00669342162296594323;
 
-    private $longitude;
-    private $latitude;
-    private $type;
+    protected $longitude;
+    protected $latitude;
+    protected $type;
 
     public function __construct($longitude, $latitude, $type = self::WGS84)
     {
