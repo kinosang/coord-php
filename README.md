@@ -1,7 +1,7 @@
 # coord-php
 
 [![Travis](https://img.shields.io/travis/kinosang/coord-php.svg)](https://travis-ci.org/kinosang/coord-php)
-[![Coveralls github](https://img.shields.io/coveralls/github/kinosang/coord-php.svg)](http://codecov.io/gh/kinosang/coord-php)
+[![Codecov](https://img.shields.io/codecov/c/github/kinosang/coord-php.svg)](http://codecov.io/gh/kinosang/coord-php)
 [![Packagist](https://img.shields.io/packagist/dt/labs7in0/coord.svg)](https://packagist.org/packages/labs7in0/coord)
 [![Packagist](https://img.shields.io/packagist/v/labs7in0/coord.svg)](https://packagist.org/packages/labs7in0/coord)
 [![license](https://img.shields.io/github/license/kinosang/coord-php.svg)](https://github.com/kinosang/coord-php)
