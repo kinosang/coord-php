@@ -136,7 +136,7 @@ class Coord
         return $ret;
     }
 
-    public function clone()
+    public function copy()
     {
         return clone $this;
     }
@@ -217,7 +217,7 @@ class Coord
 
     public function distanceTo(Coord $destination)
     {
-        $destination->to($this->type);
+        $destination = $destination->copy()->to($this->type);
 
         $latitudeRadA = deg2rad($this->latitude);
         $longitudeRadA = deg2rad($this->longitude);
