@@ -231,8 +231,12 @@ class Coord
         )) * 6378.137 * 1000;
     }
 
-    public function string()
+    public function string($latitudeFirst = false)
     {
+        if ($latitudeFirst) {
+            return $this->latitude . ',' . $this->longitude;
+        }
+
         return $this->longitude . ',' . $this->latitude;
     }
 
