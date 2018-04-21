@@ -16,7 +16,7 @@ class Coord
     const PI = 3.1415926535897932384626;
     const X_PI = 52.359877559829887333333333333333; // PI * 3000.0 / 180.0;
 
-    const ELLIPSOIDS = [
+    private $ellipsoids = [
         self::WGS84 => [
             // World Geodetic System of 1984
             'a'    => 6378137.0,
@@ -69,8 +69,11 @@ class Coord
         $lat *= 2.0 / 3.0;
         $lng *= 2.0 / 3.0;
 
-        $lat += -100.0 + 2.0 * $x + 3.0 * $y + 0.2 * pow($y, 2) + 0.1 * $xy + 0.2 * $absX;
-        $lng += 300.0 + $x + 2.0 * $y + 0.1 * pow($x, 2) + 0.1 * $xy + 0.1 * $absX;
+        $lat += -100.0 + 2.0 * $x + 3.0 * $y;
+        $lat += 0.2 * pow($y, 2) + 0.1 * $xy + 0.2 * $absX;
+
+        $lng += 300.0 + $x + 2.0 * $y;
+        $lng += 0.1 * pow($x, 2) + 0.1 * $xy + 0.1 * $absX;
 
         return [$lng, $lat];
     }
@@ -280,7 +283,7 @@ class Coord
 
     public function getArithmeticMeanRadius()
     {
-        return self::ELLIPSOIDS[$this->type]['a'] * (1 - 1 / self::ELLIPSOIDS[$this->type]['f'] / 3);
+        return $this->ellipsoids[$this->type]['a'] * (1 - 1 / $this->ellipsoids[$this->type]['f'] / 3);
     }
 
     public function distanceTo(Coord $destination)
@@ -299,8 +302,8 @@ class Coord
 
         return 2 * $radius * asin(
             sqrt(
-                (sin($dLat / 2) ** 2)
-                + cos($lat1) * cos($lat2) * (sin($dLng / 2) ** 2)
+                pow(sin($dLat / 2), 2)
+                + cos($lat1) * cos($lat2) * pow(sin($dLng / 2), 2)
             )
         );
     }
