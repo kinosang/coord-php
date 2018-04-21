@@ -10,8 +10,8 @@ class Coord
     const GCJ02 = 2;
     const BD09 = 3;
 
-    const X_PI = 52.359877559829887333333333333333; // 3.14159265358979324 * 3000.0 / 180.0;
     const PI = 3.1415926535897932384626;
+    const X_PI = 52.359877559829887333333333333333; // PI * 3000.0 / 180.0;
 
     const ELLIPSOIDS = [
         self::WGS84 => [
@@ -47,24 +47,53 @@ class Coord
         $this->type = $type;
     }
 
+    private function transform($x, $y)
+    {
+        $xy = $x * $y;
+        $absX = sqrt(abs($x));
+        $xPi = $x * self::PI;
+        $yPi = $y * self::PI;
+        $d = 20.0 * sin(6.0 * self::X_PI) + 20.0 * sin(2.0 * self::X_PI);
+
+        $lat = $d;
+        $lng = $d;
+
+        $lat += 20.0 * sin($yPi) + 40.0 * sin($yPi / 3.0);
+        $lng += 20.0 * sin($xPi) + 40.0 * sin($xPi / 3.0);
+
+        $lat += 160.0 * sin($yPi / 12.0) + 320 * sin($yPi / 30.0);
+        $lng += 150.0 * sin($xPi / 12.0) + 300.0 * sin($xPi / 30.0);
+
+        $lat *= 2.0 / 3.0;
+        $lng *= 2.0 / 3.0;
+
+        $lat += -100.0 + 2.0 * $x + 3.0 * $y + 0.2 * pow($y, 2) + 0.1 * $xy + 0.2 * $absX;
+        $lng += 300.0 + $x + 2.0 * $y + 0.1 * pow($x, 2) + 0.1 * $xy + 0.1 * $absX;
+
+        return [$lng, $lat];
+    }
+
+    private function delta($longitude, $latitude)
+    {
+        list($dLng, $dLat) = $this->transform($longitude - 105.0, $latitude - 35.0);
+        $radLat = deg2rad($latitude);
+        $magic = 1 - self::ELLIPSOIDS[self::GCJ02]['ee'] * pow(sin($radLat), 2);
+        $sqrtMagic = sqrt($magic);
+        return [
+            ($dLng * 180.0) / (self::ELLIPSOIDS[self::GCJ02]['a'] / $sqrtMagic * cos($radLat) * self::PI),
+            ($dLat * 180.0) / ((self::ELLIPSOIDS[self::GCJ02]['a'] * (1 - self::ELLIPSOIDS[self::GCJ02]['ee'])) / ($magic * $sqrtMagic) * self::PI)
+        ];
+    }
+
     private function gcj02ToWgs84()
     {
         if ($this->isOutOfChina()) {
             return $this;
         } else {
-            $dlatitude = $this->transformLatitude($this->longitude - 105.0, $this->latitude - 35.0);
-            $dlongitude = $this->transformLongitude($this->longitude - 105.0, $this->latitude - 35.0);
-            $radlatitude = $this->latitude / 180.0 * self::PI;
-            $magic = sin($radlatitude);
-            $magic = 1 - self::ELLIPSOIDS[self::GCJ02]['ee'] * $magic * $magic;
-            $sqrtmagic = sqrt($magic);
-            $dlatitude = ($dlatitude * 180.0) / ((self::ELLIPSOIDS[self::GCJ02]['a'] * (1 - self::ELLIPSOIDS[self::GCJ02]['ee'])) / ($magic * $sqrtmagic) * self::PI);
-            $dlongitude = ($dlongitude * 180.0) / (self::ELLIPSOIDS[self::GCJ02]['a'] / $sqrtmagic * cos($radlatitude) * self::PI);
-            $mglatitude = $this->latitude + $dlatitude;
-            $mglongitude = $this->longitude + $dlongitude;
+            list($longitude, $latitude) = $this->delta($this->longitude, $this->latitude);
 
-            $this->longitude = $this->longitude * 2 - $mglongitude;
-            $this->latitude = $this->latitude * 2 - $mglatitude;
+            $this->longitude -= $longitude;
+            $this->latitude -= $latitude;
             $this->type = self::WGS84;
 
             return $this;
@@ -76,19 +105,10 @@ class Coord
         if ($this->isOutOfChina()) {
             return $this;
         } else {
-            $dlatitude = $this->transformLatitude($this->longitude - 105.0, $this->latitude - 35.0);
-            $dlongitude = $this->transformLongitude($this->longitude - 105.0, $this->latitude - 35.0);
-            $radlatitude = $this->latitude / 180.0 * self::PI;
-            $magic = sin($radlatitude);
-            $magic = 1 - self::ELLIPSOIDS[self::GCJ02]['ee'] * $magic * $magic;
-            $sqrtmagic = sqrt($magic);
-            $dlatitude = ($dlatitude * 180.0) / ((self::ELLIPSOIDS[self::GCJ02]['a'] * (1 - self::ELLIPSOIDS[self::GCJ02]['ee'])) / ($magic * $sqrtmagic) * self::PI);
-            $dlongitude = ($dlongitude * 180.0) / (self::ELLIPSOIDS[self::GCJ02]['a'] / $sqrtmagic * cos($radlatitude) * self::PI);
-            $mglatitude = $this->latitude + $dlatitude;
-            $mglongitude = $this->longitude + $dlongitude;
+            list($longitude, $latitude) = $this->delta($this->longitude, $this->latitude);
 
-            $this->longitude = $mglongitude;
-            $this->latitude = $mglatitude;
+            $this->longitude += $longitude;
+            $this->latitude += $latitude;
             $this->type = self::GCJ02;
 
             return $this;
@@ -132,26 +152,6 @@ class Coord
     private function wgs84ToBd09()
     {
         return $this->wgs84ToGcj02()->gcj02ToBd09();
-    }
-
-    private function transformLatitude($longitude, $latitude)
-    {
-        $ret = -100.0 + 2.0 * $longitude + 3.0 * $latitude + 0.2 * pow($latitude, 2)
-         + 0.1 * $longitude * $latitude + 0.2 * sqrt(abs($longitude));
-        $ret += (20.0 * sin(6.0 * $longitude * self::PI) + 20.0 * sin(2.0 * $longitude * self::PI)) * 2.0 / 3.0;
-        $ret += (20.0 * sin($latitude * self::PI) + 40.0 * sin($latitude / 3.0 * self::PI)) * 2.0 / 3.0;
-        $ret += (160.0 * sin($latitude / 12.0 * self::PI) + 320 * sin($latitude * self::PI / 30.0)) * 2.0 / 3.0;
-        return $ret;
-    }
-
-    private function transformLongitude($longitude, $latitude)
-    {
-        $ret = 300.0 + $longitude + 2.0 * $latitude + 0.1 * pow($longitude, 2)
-         + 0.1 * $longitude * $latitude + 0.1 * sqrt(abs($longitude));
-        $ret += (20.0 * sin(6.0 * $longitude * self::PI) + 20.0 * sin(2.0 * $longitude * self::PI)) * 2.0 / 3.0;
-        $ret += (20.0 * sin($longitude * self::PI) + 40.0 * sin($longitude / 3.0 * self::PI)) * 2.0 / 3.0;
-        $ret += (150.0 * sin($longitude / 12.0 * self::PI) + 300.0 * sin($longitude / 30.0 * self::PI)) * 2.0 / 3.0;
-        return $ret;
     }
 
     public function copy()
