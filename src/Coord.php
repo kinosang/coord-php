@@ -303,17 +303,22 @@ class Coord
         );
     }
 
+    public function format($format = ':lng,:lat')
+    {
+        return str_replace([':lng', ':lat'], [$this->getLng(), $this->getLat()], $format);
+    }
+
     public function string($latitudeFirst = false)
     {
         if ($latitudeFirst) {
-            return $this->getLat() . ',' . $this->getLng();
+            return $this->format(':lat,:lng');
         }
 
-        return $this->getLng() . ',' . $this->getLat();
+        return $this->format();
     }
 
     public function __toString()
     {
-        return $this->string();
+        return $this->format();
     }
 }
