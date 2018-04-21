@@ -2,6 +2,7 @@
 
 namespace labs7in0\coord;
 
+use labs7in0\coord\Exceptions\ExactException;
 use labs7in0\coord\Exceptions\UnknownTypeException;
 
 class Coord
@@ -115,7 +116,7 @@ class Coord
 
                 // i == 29 usually means bad things
                 if ($i == 29) {
-                    //console.warn("gcj2wgs_exact: Out of iterations. Bug?");
+                    throw new ExactException();
                 }
 
                 $this->longitude = $newLng;
