@@ -90,7 +90,7 @@ class Coord
         if ($this->isOutOfChina()) {
             return $this;
         } else {
-            list($longitude, $latitude) = $this->delta($this->longitude, $this->latitude);
+            list($longitude, $latitude) = $this->delta($this->getLng(), $this->getLat());
 
             $this->longitude -= $longitude;
             $this->latitude -= $latitude;
@@ -105,7 +105,7 @@ class Coord
         if ($this->isOutOfChina()) {
             return $this;
         } else {
-            list($longitude, $latitude) = $this->delta($this->longitude, $this->latitude);
+            list($longitude, $latitude) = $this->delta($this->getLng(), $this->getLat());
 
             $this->longitude += $longitude;
             $this->latitude += $latitude;
@@ -117,8 +117,8 @@ class Coord
 
     private function bd09ToGcj02()
     {
-        $x = $this->longitude - 0.0065;
-        $y = $this->latitude - 0.006;
+        $x = $this->getLng() - 0.0065;
+        $y = $this->getLat() - 0.006;
         $z = sqrt($x * $x + $y * $y) - 0.00002 * sin($y * self::X_PI);
         $theta = atan2($y, $x) - 0.000003 * cos($x * self::X_PI);
 
@@ -131,9 +131,9 @@ class Coord
 
     private function gcj02ToBd09()
     {
-        $z = sqrt($this->longitude * $this->longitude + $this->latitude * $this->latitude)
-         + 0.00002 * sin($this->latitude * self::X_PI);
-        $theta = atan2($this->latitude, $this->longitude) + 0.000003 * cos($this->longitude * self::X_PI);
+        $z = sqrt($this->getLng() * $this->getLng() + $this->getLat() * $this->getLat())
+         + 0.00002 * sin($this->getLat() * self::X_PI);
+        $theta = atan2($this->getLat(), $this->getLng()) + 0.000003 * cos($this->getLng() * self::X_PI);
         $bd_longitude = $z * cos($theta) + 0.0065;
         $bd_latitude = $z * sin($theta) + 0.006;
 
@@ -161,8 +161,8 @@ class Coord
 
     public function isOutOfChina()
     {
-        return ($this->longitude < 72.004 || $this->longitude > 137.8347)
-            || ($this->latitude < 0.8293 || $this->latitude > 55.8271);
+        return ($this->getLng() < 72.004 || $this->getLng() > 137.8347)
+            || ($this->getLat() < 0.8293 || $this->getLat() > 55.8271);
     }
 
     public function toWgs84()
@@ -233,6 +233,16 @@ class Coord
         }
     }
 
+    public function getLat()
+    {
+        return $this->getLat();
+    }
+
+    public function getLng()
+    {
+        return $this->getLng();
+    }
+
     public function getArithmeticMeanRadius()
     {
         return self::ELLIPSOIDS[$this->type]['a'] * (1 - 1 / self::ELLIPSOIDS[$this->type]['f'] / 3);
@@ -242,10 +252,10 @@ class Coord
     {
         $point2 = $destination->copy()->to($this->type);
 
-        $lat1 = deg2rad($this->latitude);
-        $lat2 = deg2rad($point2->latitude);
-        $lng1 = deg2rad($this->longitude);
-        $lng2 = deg2rad($point2->longitude);
+        $lat1 = deg2rad($this->getLat());
+        $lat2 = deg2rad($point2->getLat());
+        $lng1 = deg2rad($this->getLng());
+        $lng2 = deg2rad($point2->getLng());
 
         $dLat = $lat2 - $lat1;
         $dLng = $lng2 - $lng1;
@@ -263,10 +273,10 @@ class Coord
     public function string($latitudeFirst = false)
     {
         if ($latitudeFirst) {
-            return $this->latitude . ',' . $this->longitude;
+            return $this->getLat() . ',' . $this->getLng();
         }
 
-        return $this->longitude . ',' . $this->latitude;
+        return $this->getLng() . ',' . $this->getLat();
     }
 
     public function __toString()
