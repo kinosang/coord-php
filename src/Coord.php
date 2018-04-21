@@ -11,6 +11,8 @@ class Coord
     const GCJ02 = 2;
     const BD09 = 3;
 
+    const A = 6378245.0; // Semi-major Axis of Krasovsky 1940
+    const EE = 0.00669342162296594323; // First Eccentricity Squared of Krasovsky 1940
     const PI = 3.1415926535897932384626;
     const X_PI = 52.359877559829887333333333333333; // PI * 3000.0 / 180.0;
 
@@ -22,13 +24,12 @@ class Coord
         ],
         self::GCJ02 => [
             // Krasovsky 1940
-            'a'    => 6378245.0,
+            'a'    => self::A,
             'f'    => 298.3,
-            'ee'   => 0.00669342162296594323,
         ],
         self::BD09 => [
             // Krasovsky 1940
-            'a'    => 6378245.0,
+            'a'    => self::A,
             'f'    => 298.3,
         ],
     ];
@@ -78,11 +79,11 @@ class Coord
     {
         list($dLng, $dLat) = $this->transform($longitude - 105.0, $latitude - 35.0);
         $radLat = deg2rad($latitude);
-        $magic = 1 - self::ELLIPSOIDS[self::GCJ02]['ee'] * pow(sin($radLat), 2);
+        $magic = 1 - self::EE * pow(sin($radLat), 2);
         $sqrtMagic = sqrt($magic);
         return [
-            ($dLng * 180.0) / (self::ELLIPSOIDS[self::GCJ02]['a'] / $sqrtMagic * cos($radLat) * self::PI),
-            ($dLat * 180.0) / ((self::ELLIPSOIDS[self::GCJ02]['a'] * (1 - self::ELLIPSOIDS[self::GCJ02]['ee'])) / ($magic * $sqrtMagic) * self::PI)
+            ($dLng * 180.0) / (self::A / $sqrtMagic * cos($radLat) * self::PI),
+            ($dLat * 180.0) / ((self::A * (1 - self::EE)) / ($magic * $sqrtMagic) * self::PI)
         ];
     }
 
