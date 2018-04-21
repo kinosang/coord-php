@@ -9,10 +9,25 @@ class Coord
     const WGS84 = 1;
     const GCJ02 = 2;
     const BD09 = 3;
+
     const X_PI = 52.359877559829887333333333333333; // 3.14159265358979324 * 3000.0 / 180.0;
     const PI = 3.1415926535897932384626;
-    const A = 6378245.0;
-    const EE = 0.00669342162296594323;
+
+    const ELLIPSOIDS = [
+        self::WGS84 => [
+            'a'    => 6378137.0,
+            'f'    => 298.257223563,
+        ],
+        self::GCJ02 => [
+            'a'    => 6378245.0,
+            'f'    => 298.3,
+            'ee'   => 0.00669342162296594323,
+        ],
+        self::BD09 => [
+            'a'    => 6378245.0,
+            'f'    => 298.3,
+        ],
+    ];
 
     protected $longitude;
     protected $latitude;
@@ -38,10 +53,10 @@ class Coord
             $dlongitude = $this->transformLongitude($this->longitude - 105.0, $this->latitude - 35.0);
             $radlatitude = $this->latitude / 180.0 * self::PI;
             $magic = sin($radlatitude);
-            $magic = 1 - self::EE * $magic * $magic;
+            $magic = 1 - self::ELLIPSOIDS[self::GCJ02]['ee'] * $magic * $magic;
             $sqrtmagic = sqrt($magic);
-            $dlatitude = ($dlatitude * 180.0) / ((self::A * (1 - self::EE)) / ($magic * $sqrtmagic) * self::PI);
-            $dlongitude = ($dlongitude * 180.0) / (self::A / $sqrtmagic * cos($radlatitude) * self::PI);
+            $dlatitude = ($dlatitude * 180.0) / ((self::ELLIPSOIDS[self::GCJ02]['a'] * (1 - self::ELLIPSOIDS[self::GCJ02]['ee'])) / ($magic * $sqrtmagic) * self::PI);
+            $dlongitude = ($dlongitude * 180.0) / (self::ELLIPSOIDS[self::GCJ02]['a'] / $sqrtmagic * cos($radlatitude) * self::PI);
             $mglatitude = $this->latitude + $dlatitude;
             $mglongitude = $this->longitude + $dlongitude;
 
@@ -62,10 +77,10 @@ class Coord
             $dlongitude = $this->transformLongitude($this->longitude - 105.0, $this->latitude - 35.0);
             $radlatitude = $this->latitude / 180.0 * self::PI;
             $magic = sin($radlatitude);
-            $magic = 1 - self::EE * $magic * $magic;
+            $magic = 1 - self::ELLIPSOIDS[self::GCJ02]['ee'] * $magic * $magic;
             $sqrtmagic = sqrt($magic);
-            $dlatitude = ($dlatitude * 180.0) / ((self::A * (1 - self::EE)) / ($magic * $sqrtmagic) * self::PI);
-            $dlongitude = ($dlongitude * 180.0) / (self::A / $sqrtmagic * cos($radlatitude) * self::PI);
+            $dlatitude = ($dlatitude * 180.0) / ((self::ELLIPSOIDS[self::GCJ02]['a'] * (1 - self::ELLIPSOIDS[self::GCJ02]['ee'])) / ($magic * $sqrtmagic) * self::PI);
+            $dlongitude = ($dlongitude * 180.0) / (self::ELLIPSOIDS[self::GCJ02]['a'] / $sqrtmagic * cos($radlatitude) * self::PI);
             $mglatitude = $this->latitude + $dlatitude;
             $mglongitude = $this->longitude + $dlongitude;
 
@@ -215,20 +230,31 @@ class Coord
         }
     }
 
+    public function getArithmeticMeanRadius()
+    {
+        return self::ELLIPSOIDS[$this->type]['a'] * (1 - 1 / self::ELLIPSOIDS[$this->type]['f'] / 3);
+    }
+
     public function distanceTo(Coord $destination)
     {
-        $destination = $destination->copy()->to($this->type);
+        $point2 = $destination->copy()->to($this->type);
 
-        $latitudeRadA = deg2rad($this->latitude);
-        $longitudeRadA = deg2rad($this->longitude);
-        $latitudeRadB = deg2rad($destination->latitude);
-        $longitudeRadB = deg2rad($destination->longitude);
+        $lat1 = deg2rad($this->latitude);
+        $lat2 = deg2rad($point2->latitude);
+        $lng1 = deg2rad($this->longitude);
+        $lng2 = deg2rad($point2->longitude);
 
-        return 2 * asin(sqrt(
-            pow(sin(($latitudeRadA - $latitudeRadB) / 2), 2)
-             + cos($latitudeRadA) * cos($latitudeRadB)
-             * pow(sin(($longitudeRadA - $longitudeRadB) / 2), 2)
-        )) * 6378.137 * 1000;
+        $dLat = $lat2 - $lat1;
+        $dLng = $lng2 - $lng1;
+
+        $radius = $this->getArithmeticMeanRadius();
+
+        return 2 * $radius * asin(
+            sqrt(
+                (sin($dLat / 2) ** 2)
+                + cos($lat1) * cos($lat2) * (sin($dLng / 2) ** 2)
+            )
+        );
     }
 
     public function string($latitudeFirst = false)
