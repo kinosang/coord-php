@@ -34,6 +34,7 @@ class CoordTest extends TestCase
     {
         $coord = new Coord(116.404, 39.915, Coord::GCJ02);
         $this->assertEquals('116.39813053332,39.913884507655', (string)$coord->copy()->toWgs84());
+        $this->assertEquals('116.39813035615,39.913884688338', (string)$coord->copy()->toWgs84(true));
         $this->assertEquals($coord, $coord->copy()->toGcj02());
         $this->assertEquals('116.41036949371,39.92133699351', (string)$coord->copy()->toBd09());
 

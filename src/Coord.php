@@ -85,15 +85,48 @@ class Coord
         ];
     }
 
-    private function gcj02ToWgs84()
+    private function gcj02ToWgs84($exact = false)
     {
         if ($this->isOutOfChina()) {
             return $this;
         } else {
-            list($longitude, $latitude) = $this->delta($this->getLng(), $this->getLat());
+            if ($exact) {
+                $threshold = pow(10, -6); // ~0.55 m equator & latitude
 
-            $this->longitude -= $longitude;
-            $this->latitude -= $latitude;
+                $newLat = $this->getLat();
+                $newLng = $this->getLng();
+
+                $rough = $this->copy()->toWgs84();
+                $oldLat = $rough->getLat();
+                $oldLng = $rough->getLng();
+
+                for ($i = 0;
+                    $i < 30 && max(abs($oldLat - $newLat), abs($oldLng - $newLng)) > $threshold;
+                    $i++) {
+                        $oldLat = $newLat;
+                        $oldLng = $newLng;
+
+                        $tmp = new self($newLng, $newLat, self::WGS84);
+                        $tmp->toGcj02();
+
+                        $newLat -= $tmp->getLat() - $this->getLat();
+                        $newLng -= $tmp->getLng() - $this->getLng();
+                }
+
+                // i == 29 usually means bad things
+                if ($i == 29) {
+                    //console.warn("gcj2wgs_exact: Out of iterations. Bug?");
+                }
+
+                $this->longitude = $newLng;
+                $this->latitude = $newLat;
+            } else {
+                list($longitude, $latitude) = $this->delta($this->getLng(), $this->getLat());
+
+                $this->longitude -= $longitude;
+                $this->latitude -= $latitude;
+            }
+
             $this->type = self::WGS84;
 
             return $this;
@@ -144,9 +177,9 @@ class Coord
         return $this;
     }
 
-    private function bd09ToWgs84()
+    private function bd09ToWgs84($exact = false)
     {
-        return $this->bd09ToGcj02()->gcj02ToWgs84();
+        return $this->bd09ToGcj02()->gcj02ToWgs84($exact);
     }
 
     private function wgs84ToBd09()
@@ -165,17 +198,17 @@ class Coord
             || ($this->getLat() < 0.8293 || $this->getLat() > 55.8271);
     }
 
-    public function toWgs84()
+    public function toWgs84($exact = false)
     {
         switch ($this->type) {
             case self::WGS84:
                 return $this;
                 break;
             case self::GCJ02:
-                return $this->gcj02ToWgs84();
+                return $this->gcj02ToWgs84($exact);
                 break;
             case self::BD09:
-                return $this->bd09ToWgs84();
+                return $this->bd09ToWgs84($exact);
                 break;
             default:
                 throw new UnknownTypeException($this->type);
@@ -216,11 +249,11 @@ class Coord
         }
     }
 
-    public function to($type)
+    public function to($type, $exact = false)
     {
         switch ($type) {
             case self::WGS84:
-                return $this->toWgs84();
+                return $this->toWgs84($exact);
                 break;
             case self::GCJ02:
                 return $this->toGcj02();
