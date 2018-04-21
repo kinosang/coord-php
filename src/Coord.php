@@ -155,31 +155,37 @@ class Coord
 
     private function bd09ToGcj02()
     {
-        $x = $this->getLng() - 0.0065;
-        $y = $this->getLat() - 0.006;
-        $z = sqrt($x * $x + $y * $y) - 0.00002 * sin($y * self::X_PI);
-        $theta = atan2($y, $x) - 0.000003 * cos($x * self::X_PI);
+        if ($this->isOutOfChina()) {
+            return $this;
+        } else {
+            $x = $this->getLng() - 0.0065;
+            $y = $this->getLat() - 0.006;
+            $z = sqrt($x * $x + $y * $y) - 0.00002 * sin($y * self::X_PI);
+            $theta = atan2($y, $x) - 0.000003 * cos($x * self::X_PI);
 
-        $this->longitude = $z * cos($theta);
-        $this->latitude = $z * sin($theta);
-        $this->type = self::GCJ02;
+            $this->longitude = $z * cos($theta);
+            $this->latitude = $z * sin($theta);
+            $this->type = self::GCJ02;
 
-        return $this;
+            return $this;
+        }
     }
 
     private function gcj02ToBd09()
     {
-        $z = sqrt($this->getLng() * $this->getLng() + $this->getLat() * $this->getLat())
-         + 0.00002 * sin($this->getLat() * self::X_PI);
-        $theta = atan2($this->getLat(), $this->getLng()) + 0.000003 * cos($this->getLng() * self::X_PI);
-        $bd_longitude = $z * cos($theta) + 0.0065;
-        $bd_latitude = $z * sin($theta) + 0.006;
+        if ($this->isOutOfChina()) {
+            return $this;
+        } else {
+            $z = sqrt($this->getLng() * $this->getLng() + $this->getLat() * $this->getLat())
+                + 0.00002 * sin($this->getLat() * self::X_PI);
+            $theta = atan2($this->getLat(), $this->getLng()) + 0.000003 * cos($this->getLng() * self::X_PI);
 
-        $this->longitude = $bd_longitude;
-        $this->latitude = $bd_latitude;
-        $this->type = self::BD09;
+            $this->longitude = $z * cos($theta) + 0.0065;
+            $this->latitude = $z * sin($theta) + 0.006;
+            $this->type = self::BD09;
 
-        return $this;
+            return $this;
+        }
     }
 
     private function bd09ToWgs84($exact = false)
