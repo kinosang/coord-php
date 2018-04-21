@@ -268,12 +268,12 @@ class Coord
 
     public function getLat()
     {
-        return $this->getLat();
+        return $this->latitude;
     }
 
     public function getLng()
     {
-        return $this->getLng();
+        return $this->longitude;
     }
 
     public function getArithmeticMeanRadius()
