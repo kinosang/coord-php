@@ -15,15 +15,18 @@ class Coord
 
     const ELLIPSOIDS = [
         self::WGS84 => [
+            // World Geodetic System of 1984
             'a'    => 6378137.0,
             'f'    => 298.257223563,
         ],
         self::GCJ02 => [
+            // Krasovsky 1940
             'a'    => 6378245.0,
             'f'    => 298.3,
             'ee'   => 0.00669342162296594323,
         ],
         self::BD09 => [
+            // Krasovsky 1940
             'a'    => 6378245.0,
             'f'    => 298.3,
         ],
